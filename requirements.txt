@@ -1,0 +1,3 @@
+# Core dependencies
+evdev>=1.4.0; sys_platform == 'linux'
+pyautogui>=0.9.54; sys_platform != 'linux' and sys_platform != 'darwin'

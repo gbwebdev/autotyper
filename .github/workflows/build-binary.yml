@@ -1,0 +1,101 @@
+name: Build Linux Binary
+
+on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-binary:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          python3-dev \
+          libffi-dev \
+          libssl-dev \
+          build-essential \
+          upx-ucl
+          
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[build]"
+        
+    - name: Build binary with PyInstaller
+      run: |
+        pyinstaller --clean autotyper.spec
+        
+    - name: Test binary
+      run: |
+        ./dist/autotyper --help
+        ./dist/autotyper --dump-layout --layout us
+        
+    - name: Get binary info
+      run: |
+        ls -la dist/
+        file dist/autotyper
+        ldd dist/autotyper || echo "Binary is statically linked or uses dynamic loading"
+        
+    - name: Upload binary artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: autotyper-linux-binary
+        path: dist/autotyper
+        retention-days: 30
+        
+    - name: Create release (on tag)
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/autotyper
+        name: Release ${{ github.ref_name }}
+        body: |
+          ## Linux Binary Release
+          
+          This release includes a standalone Linux binary for autotyper.
+          
+          ### Installation
+          
+          Download the binary and make it executable:
+          ```bash
+          chmod +x autotyper
+          sudo mv autotyper /usr/local/bin/
+          ```
+          
+          ### Usage
+          
+          ```bash
+          autotyper --help
+          ```
+          
+          ### Requirements
+          
+          - Linux system
+          - Write access to `/dev/uinput` (for uinput backend)
+          - Or run with appropriate permissions
+          
+          ### Features
+          
+          - Layout-aware typing (US, French AZERTY, OVH KVM)
+          - Multiple backends (uinput, pyautogui)
+          - Unicode fallback support
+          - Secure password input
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
