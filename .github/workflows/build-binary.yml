@@ -52,7 +52,7 @@ jobs:
         ldd dist/autotyper || echo "Binary is statically linked or uses dynamic loading"
         
     - name: Upload binary artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: autotyper-linux-binary
         path: dist/autotyper
@@ -60,7 +60,7 @@ jobs:
         
     - name: Create release (on tag)
       if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: dist/autotyper
         name: Release ${{ github.ref_name }}
