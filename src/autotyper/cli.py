@@ -10,7 +10,7 @@ import sys
 import time
 from typing import Optional, Set
 
-from .core import (
+from autotyper.core import (
     LAYOUTS,
     infer_default_layout,
     parse_override_json,

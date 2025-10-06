@@ -9,7 +9,7 @@ __version__ = "1.0.0"
 __author__ = "Guillaume Biton"
 __email__ = "guillaume.biton@example.com"
 
-from .core import (
+from autotyper.core import (
     LAYOUTS,
     autodetect_layout_linux,
     infer_default_layout,
